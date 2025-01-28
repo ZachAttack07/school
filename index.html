@@ -2,86 +2,129 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Interactive Realistic Curtain Showcase</title>
+    <title>CSS-Only Interactive Curtain Showcase</title>
     <style>
-        body, html {
+        /* Reset and basic styles */
+        * {
             margin: 0;
             padding: 0;
-            height: 100%;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
+            box-sizing: border-box;
         }
 
-        .stage {
-            position: relative;
+        body, html {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: url('https://i.imgur.com/8I1YbQy.jpg') center center / cover no-repeat; /* Optional background texture */
+            background-color: #000;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Stage container */
+        .stage {
+            position: relative;
+            width: 80%;
+            height: 80%;
+            max-width: 1000px;
+            max-height: 600px;
+            background-color: #222;
+            overflow: hidden;
+            border: 5px solid #444;
+            border-radius: 10px;
         }
 
         /* Spotlights */
         .spotlight {
             position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.8) 80%);
-            border-radius: 50%;
-            pointer-events: none;
-            box-shadow: 0 0 50px 20px rgba(255,255,255,0.2);
-            animation: randomMove 10s linear infinite;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.8) 80%);
+            opacity: 0.6;
+            animation: moveSpotlight 10s linear infinite;
         }
 
-        @keyframes randomMove {
-            0% { transform: translate(0, 0); opacity: 0.6; }
-            25% { transform: translate(80vw, 60vh); opacity: 0.4; }
-            50% { transform: translate(20vw, 80vh); opacity: 0.5; }
-            75% { transform: translate(70vw, 20vh); opacity: 0.3; }
-            100% { transform: translate(0, 0); opacity: 0.6; }
+        .spotlight:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .spotlight:nth-child(2) {
+            animation-delay: 2.5s;
+        }
+
+        .spotlight:nth-child(3) {
+            animation-delay: 5s;
+        }
+
+        /* Spotlights random movement */
+        @keyframes moveSpotlight {
+            0% { transform: translate(0%, 0%) rotate(0deg); }
+            25% { transform: translate(50%, -30%) rotate(45deg); }
+            50% { transform: translate(-30%, 50%) rotate(90deg); }
+            75% { transform: translate(40%, 20%) rotate(135deg); }
+            100% { transform: translate(0%, 0%) rotate(180deg); }
         }
 
         /* Curtains */
-        .curtain {
-            position: absolute;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(135deg, #8B0000, #B22222);
-            box-shadow: inset -10px 0 30px rgba(0,0,0,0.5);
-            cursor: pointer;
-            transition: transform 0.5s ease;
-            z-index: 3;
-            overflow: hidden;
+        input[type="checkbox"] {
+            display: none;
         }
 
-        .curtain::before {
+        .curtains {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 2;
+        }
+
+        .curtains .curtain {
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(135deg, #8B0000, #FF0000);
+            box-shadow: inset -5px 0 15px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            transition: transform 1s ease;
+        }
+
+        .curtains .curtain.left {
+            transform: translateX(0);
+        }
+
+        .curtains .curtain.right {
+            transform: translateX(0);
+        }
+
+        /* Adding folds to curtains */
+        .curtains .curtain::before {
             content: '';
             position: absolute;
             width: 100%;
             height: 100%;
-            background: url('https://i.imgur.com/3Z4F4Z5.png') repeat; /* Optional curtain texture */
-            opacity: 0.8;
-            top: 0;
-            left: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.1) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            opacity: 0.2;
+            pointer-events: none;
         }
 
-        .left-curtain {
-            left: 0;
-            transform: translateX(0%);
-        }
-
-        .right-curtain {
-            right: 0;
-            transform: translateX(0%);
-        }
-
-        .open .left-curtain {
+        /* Open curtains when checkbox is checked */
+        #toggle:checked ~ .curtains .curtain.left {
             transform: translateX(-100%);
         }
 
-        .open .right-curtain {
+        #toggle:checked ~ .curtains .curtain.right {
             transform: translateX(100%);
         }
 
@@ -92,26 +135,55 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            z-index: 2;
+            z-index: 1;
             padding: 20px;
             max-width: 80%;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
+            opacity: 0;
+            transition: opacity 1s ease 1s;
+        }
+
+        /* Show content when curtains are open */
+        #toggle:checked ~ .content {
+            opacity: 1;
         }
 
         .content h1 {
             font-size: 3em;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 8px #000;
+            text-shadow: 2px 2px 4px #000;
         }
 
         .content p {
             font-size: 1.5em;
-            text-shadow: 1px 1px 4px #000;
+            text-shadow: 1px 1px 2px #000;
         }
 
-        /* Prevent text selection during drag */
-        .no-select {
+        /* Toggle Button */
+        .toggle-button {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+        }
+
+        .toggle-button label {
+            background-color: #FF0000;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-button label:hover {
+            background-color: #8B0000;
+        }
+
+        /* Prevent text selection */
+        body {
             user-select: none;
             -webkit-user-select: none;
             -moz-user-select: none;
@@ -120,151 +192,31 @@
     </style>
 </head>
 <body>
-    <div class="stage no-select">
+    <div class="stage">
         <!-- Spotlights -->
-        <div class="spotlight" style="animation-delay: 0s;"></div>
-        <div class="spotlight" style="animation-delay: 5s;"></div>
-        <div class="spotlight" style="animation-delay: 2.5s;"></div>
-        <div class="spotlight" style="animation-delay: 7.5s;"></div>
+        <div class="spotlight"></div>
+        <div class="spotlight"></div>
+        <div class="spotlight"></div>
+
+        <!-- Toggle Checkbox -->
+        <input type="checkbox" id="toggle">
 
         <!-- Curtains -->
-        <div class="curtain left-curtain"></div>
-        <div class="curtain right-curtain"></div>
+        <div class="curtains">
+            <div class="curtain left"></div>
+            <div class="curtain right"></div>
+        </div>
 
         <!-- Content -->
         <div class="content">
-            <h1>Welcome to the Grand Show</h1>
+            <h1>Welcome to the Showcase</h1>
             <p>Edit this text in the HTML to display your own message.</p>
         </div>
+
+        <!-- Toggle Button -->
+        <div class="toggle-button">
+            <label for="toggle">Open Curtains</label>
+        </div>
     </div>
-
-    <script>
-        (function() {
-            const stage = document.querySelector('.stage');
-            const leftCurtain = document.querySelector('.left-curtain');
-            const rightCurtain = document.querySelector('.right-curtain');
-            const spotlights = document.querySelectorAll('.spotlight');
-            let isDragging = false;
-            let startX = 0;
-            const curtainWidth = window.innerWidth / 2;
-            let curtainsOpened = false;
-
-            // Function to open curtains
-            function openCurtains() {
-                stage.classList.add('open');
-                curtainsOpened = true;
-                // Stop spotlight animations once curtains are opened
-                spotlights.forEach(spot => {
-                    spot.style.animationPlayState = 'paused';
-                });
-            }
-
-            // Mouse Events
-            stage.addEventListener('mousedown', function(e) {
-                if (curtainsOpened) return;
-                isDragging = true;
-                startX = e.clientX;
-                document.body.style.cursor = 'grabbing';
-            });
-
-            document.addEventListener('mousemove', function(e) {
-                if (!isDragging || curtainsOpened) return;
-                let dx = e.clientX - startX;
-                // Limit the dragging to half the screen
-                dx = Math.max(-curtainWidth, Math.min(curtainWidth, dx));
-                leftCurtain.style.transform = `translateX(${dx}px)`;
-                rightCurtain.style.transform = `translateX(${-dx}px)`;
-            });
-
-            document.addEventListener('mouseup', function(e) {
-                if (!isDragging || curtainsOpened) return;
-                isDragging = false;
-                document.body.style.cursor = 'default';
-                let dx = e.clientX - startX;
-                // If dragged more than 100px, open curtains
-                if (Math.abs(dx) > 100) {
-                    openCurtains();
-                } else {
-                    // Return curtains to original position
-                    leftCurtain.style.transform = 'translateX(0%)';
-                    rightCurtain.style.transform = 'translateX(0%)';
-                }
-            });
-
-            // Touch Events for mobile support
-            stage.addEventListener('touchstart', function(e) {
-                if (curtainsOpened) return;
-                isDragging = true;
-                startX = e.touches[0].clientX;
-            });
-
-            document.addEventListener('touchmove', function(e) {
-                if (!isDragging || curtainsOpened) return;
-                let dx = e.touches[0].clientX - startX;
-                dx = Math.max(-curtainWidth, Math.min(curtainWidth, dx));
-                leftCurtain.style.transform = `translateX(${dx}px)`;
-                rightCurtain.style.transform = `translateX(${-dx}px)`;
-            });
-
-            document.addEventListener('touchend', function(e) {
-                if (!isDragging || curtainsOpened) return;
-                isDragging = false;
-                let dx = e.changedTouches[0].clientX - startX;
-                if (Math.abs(dx) > 100) {
-                    openCurtains();
-                } else {
-                    leftCurtain.style.transform = 'translateX(0%)';
-                    rightCurtain.style.transform = 'translateX(0%)';
-                }
-            });
-
-            // Prevent selecting text while dragging
-            stage.addEventListener('dragstart', function(e) {
-                e.preventDefault();
-            });
-
-            // Randomize spotlight movements
-            function randomizeSpotlights() {
-                spotlights.forEach(spot => {
-                    const duration = Math.random() * 5 + 5; // 5s to 10s
-                    const delay = Math.random() * 5; // 0s to 5s
-                    const size = Math.random() * 100 + 150; // 150px to 250px
-                    const opacity = Math.random() * 0.3 + 0.3; // 0.3 to 0.6
-                    const newAnimation = `
-                        @keyframes spotlightMove_${Math.random().toString(36).substr(2, 9)} {
-                            0% { 
-                                transform: translate(${Math.random() * 100}vw, ${Math.random() * 100}vh); 
-                                opacity: ${opacity};
-                            }
-                            50% { 
-                                transform: translate(${Math.random() * 100}vw, ${Math.random() * 100}vh); 
-                                opacity: ${opacity};
-                            }
-                            100% { 
-                                transform: translate(${Math.random() * 100}vw, ${Math.random() * 100}vh); 
-                                opacity: ${opacity};
-                            }
-                        }
-                    `;
-                    const styleSheet = document.createElement("style");
-                    styleSheet.type = "text/css";
-                    styleSheet.innerText = newAnimation;
-                    document.head.appendChild(styleSheet);
-                    spot.style.width = `${size}px`;
-                    spot.style.height = `${size}px`;
-                    spot.style.animation = `spotlightMove_${spot.style.animationDelay} ${duration}s linear infinite`;
-                });
-            }
-
-            // Initial randomization
-            //randomizeSpotlights(); // Not needed as we have predefined keyframes
-
-            // Optionally, you can periodically randomize spotlights to keep the movement dynamic
-            /*
-            setInterval(randomizeSpotlights, 15000);
-            */
-
-        })();
-    </script>
 </body>
 </html>
